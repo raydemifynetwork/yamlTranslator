@@ -61,9 +61,9 @@ config:
   messages:
     welcome: "Welcome!"
     error: "Something went wrong!"
-Expected Output (chaves_traduzidos/0001_config_01.yml):
-```
 
+```
+Expected Output (chaves_traduzidos/0001_config_01.yml):
 ```
 config:
   messages:
@@ -114,8 +114,9 @@ config:
   settings:
     language: "pt-br"
     difficulty: "difícil"
-Expected Output (config_final.yml):
+
 ```
+Expected Output (config_final.yml):
 ```
 config:
   messages:
