@@ -1,24 +1,23 @@
-# yamlTranslator
-Esses quatro scripts trabalham juntos para separar, traduzir, limpar e reunir um grande arquivo YAML em um processo estruturado e eficiente. Abaixo está a explicação detalhada de cada etapa
+YAML Translation Automation with OpenAI GPT-3.5 Turbo 🚀
+This project consists of four Python scripts that work together to split, translate, clean, and merge a large YAML file in a structured and efficient process. Below is a detailed explanation of each step:
 
-1️⃣ separar.py → Divide um grande arquivo YAML em partes menores
-Objetivo:
-Decompor arquivos YAML grandes em arquivos menores para facilitar a tradução e o processamento.
+1️⃣ separar.py → Splitting a Large YAML File into Smaller Parts
+Objective:
+Break down large YAML files into smaller, manageable parts to facilitate translation and processing.
 
-Fluxo de funcionamento:
+How It Works:
+✅ Reads the main YAML file (e.g., 0003_ProceduralItemGenerationSettings.yml).
+✅ Preserves the dictionary hierarchy while splitting the content.
+✅ Divides large dictionaries into smaller files, ensuring a maximum of 300 lines per file.
+✅ Saves each part in the chaves/ folder, using the following naming format:
 
-Lê o arquivo principal (exemplo: 0003_ProceduralItemGenerationSettings.yml).
-Analisa a estrutura YAML e mantém a hierarquia dos dicionários.
-Divide os dicionários grandes em arquivos menores com no máximo 300 linhas cada.
-Salva cada parte separadamente na pasta chaves/, nomeando os arquivos no formato:
-0001_nomeDoDicionario_01.yml
-0001_nomeDoDicionario_02.yml
-Para garantir que possam ser reunidos corretamente depois.
-Exemplo de entrada (portuguese_brazilian.yml):
-
-yaml
-Copiar
-Editar
+```
+0001_dictionaryName_01.yml  
+0001_dictionaryName_02.yml  
+This ensures proper reassembly later.
+```
+Example Input (portuguese_brazilian.yml):
+```
 config:
   messages:
     welcome: "Welcome!"
@@ -26,109 +25,98 @@ config:
   settings:
     language: "en"
     difficulty: "hard"
-Saída esperada (arquivos separados):
-
-yaml
-Copiar
-Editar
+```
+Expected Output (Split Files in chaves/):
+```
 # 0001_config_01.yml
 config:
   messages:
     welcome: "Welcome!"
     error: "Something went wrong!"
+```
 
+```
 # 0001_config_02.yml
 config:
   settings:
     language: "en"
     difficulty: "hard"
-2️⃣ python.py → Tradução automática via OpenAI
-Objetivo:
-Traduzir todos os arquivos da pasta chaves/ para português usando a API da OpenAI.
+```
+2️⃣ python.py → Automatic Translation via OpenAI
+Objective:
+Translate all files inside the chaves/ folder to Portuguese using the OpenAI GPT-3.5 Turbo API.
 
-Fluxo de funcionamento:
+How It Works:
+✅ Reads each file inside chaves/.
+✅ Sends the entire content to the OpenAI API while ensuring:
 
-Percorre os arquivos na pasta chaves/ e lê cada um.
-Envia o conteúdo inteiro para a API do ChatGPT, garantindo que:
-A estrutura YAML permaneça intacta.
-Somente os valores sejam traduzidos (chaves e dicionários são preservados).
-As listas YAML não sejam alteradas (- item continua no mesmo formato).
-Variáveis ($valor) e códigos de formatação (&x, §x) não sejam alterados.
-Recebe o YAML traduzido e salva na pasta chaves_traduzidos/ com o mesmo nome.
-Exemplo de entrada (chaves/0001_config_01.yml):
-
-yaml
-Copiar
-Editar
+The YAML structure remains intact.
+Only values are translated (keys and dictionary names remain unchanged).
+Lists remain formatted correctly (- item stays in the same format).
+Variables ($value) and color codes (&x, §x) are not altered.
+✅ Receives the translated YAML and saves it in the chaves_traduzidos/ folder with the same filename.
+Example Input (chaves/0001_config_01.yml):
+```
 config:
   messages:
     welcome: "Welcome!"
     error: "Something went wrong!"
-Saída esperada (chaves_traduzidos/0001_config_01.yml):
+Expected Output (chaves_traduzidos/0001_config_01.yml):
+```
 
-yaml
-Copiar
-Editar
+```
 config:
   messages:
     welcome: "Bem-vindo!"
     error: "Algo deu errado!"
-3️⃣ removeryaml.py → Remove formatação desnecessária do YAML
-Objetivo:
-Remover marcadores de código (```yaml e ```) que a OpenAI às vezes adiciona.
+```
+3️⃣ removeryaml.py → Removing Unwanted YAML Formatting
+Objective:
+Remove unnecessary formatting artifacts (```yaml and ```) that OpenAI sometimes adds.
 
-Fluxo de funcionamento:
+How It Works:
+✅ Scans all files inside the chaves_traduzidos/ folder.
+✅ Detects and removes any unwanted formatting from the first and last lines.
+✅ Rewrites the cleaned file, ensuring correct YAML formatting.
 
-Percorre todos os arquivos na pasta chaves_traduzidos/.
-Verifica se a primeira ou última linha contém ```yaml ou ```.
-Remove essas linhas e reescreve o arquivo sem elas.
-Problema que resolve:
-Às vezes, a OpenAI retorna YAML formatado assim:
+Problem It Fixes:
+Sometimes, OpenAI returns formatted YAML like this:
 
-yaml
-Copiar
-Editar
-```yaml
+```
 config:
   messages:
     welcome: "Bem-vindo!"
     error: "Algo deu errado!"
-yaml
-Copiar
-Editar
-Isso pode causar **erros na remontagem do arquivo**. Esse script garante que o YAML fique correto.
+This can cause errors when merging the files. This script ensures that the YAML is correctly formatted.
+```
+4️⃣ juntartudo.py → Merging All Translated Parts into a Single File
+Objective:
+Reassemble the translated files from chaves_traduzidos/ into a single final YAML file (config_final.yml).
 
----
+How It Works:
+✅ Sorts files numerically (0001, 0002, 0003, ...).
+✅ Reads each file and merges the content while ensuring:
 
-## **4️⃣ `juntartudo.py` → Junta todas as partes traduzidas em um único arquivo**
-**Objetivo:**  
-Reunir os arquivos traduzidos da pasta `chaves_traduzidos/` em um único arquivo final `config_final.yml`.
-
-**Fluxo de funcionamento:**
-1. **Ordena os arquivos numericamente** (`0001`, `0002`, `0003`, ...).
-2. **Lê cada arquivo e junta o conteúdo**, garantindo que:
-   - **A sequência original seja preservada**.
-   - **Não haja espaços extras entre os blocos YAML**.
-3. **Salva o arquivo final como `config_final.yml`**.
-
-**Exemplo de entrada (`chaves_traduzidos/`):**
-```yaml
+The original sequence is preserved.
+No extra spaces between YAML blocks.
+✅ Saves the final merged file as config_final.yml.
+Example Input (chaves_traduzidos/):
+```
 # 0001_config_01.yml
 config:
   messages:
     welcome: "Bem-vindo!"
     error: "Algo deu errado!"
-
+```
+```
 # 0001_config_02.yml
 config:
   settings:
     language: "pt-br"
     difficulty: "difícil"
-Saída esperada (config_final.yml):
-
-yaml
-Copiar
-Editar
+Expected Output (config_final.yml):
+```
+```
 config:
   messages:
     welcome: "Bem-vindo!"
@@ -136,23 +124,17 @@ config:
   settings:
     language: "pt-br"
     difficulty: "difícil"
-📌 Resumo do Processo Completo
-1️⃣ separar.py → Divide um arquivo YAML grande em partes menores para facilitar a tradução.
-2️⃣ python.py → Traduz cada parte separadamente usando a API da OpenAI.
-3️⃣ removeryaml.py → Corrige erros de formatação gerados pela OpenAI.
-4️⃣ juntartudo.py → Reúne todas as partes traduzidas em um único arquivo final.
+```
+📌 Full Process Summary
+1️⃣ separar.py → Splits a large YAML file into smaller parts to facilitate translation.
+2️⃣ python.py → Translates each part separately using OpenAI’s API.
+3️⃣ removeryaml.py → Fixes formatting errors introduced by OpenAI.
+4️⃣ juntartudo.py → Merges all translated parts into a final single file.
 
-🔥 Benefícios dessa abordagem:
+🔥 Key Benefits of This Approach:
+✅ Avoids exceeding OpenAI's character limit.
+✅ Preserves the original YAML structure.
+✅ Ensures precise translations without modifying variables and formatting.
+✅ Facilitates processing and final reassembly.
 
-Evita exceder o limite de caracteres da OpenAI.
-Preserva a estrutura original do YAML.
-Garante traduções precisas sem alterar variáveis e formatação.
-Facilita o processamento e montagem final.
-Este conjunto de scripts automatiza a tradução de arquivos YAML mantendo precisão e eficiência. 🚀
-
-
-
-
-
-
-
+This set of scripts automates YAML translation while ensuring efficiency and accuracy. 🚀
